@@ -135,10 +135,18 @@ function renderWord(){
   $("bar").style.width=Math.round(100*idx/words.length)+"%";
   updStats();
 }
+function schedule(){
+  const prev=words.slice(idx,idx+chunk).join(" ");
+  let d=60000*chunk/wpm;
+  if(/[.،,؛:!؟?]$/.test(prev))d*=1.8;
+  else if(prev.length>8)d*=1.25;
+  timer=setTimeout(()=>{if(timer){step();}},Math.round(d));
+}
 function step(){
   idx+=chunk;
   if(idx>=words.length){finishRead();return}
   renderWord();
+  if(timer)schedule();
 }
 function start(){
   if(!words.length){
@@ -147,13 +155,12 @@ function start(){
   if(idx>=words.length)idx=0;
   $("doneBox").classList.remove("show");
   renderWord();
-  const delay=Math.round(60000*chunk/wpm);
-  timer=setInterval(step,delay);
+  schedule();
   $("goBtn").textContent="⏸️ وقفة";
   $("goBtn").classList.add("s");$("goBtn").classList.remove("p");
 }
 function pause(){
-  clearInterval(timer);timer=null;
+  clearTimeout(timer);timer=null;
   $("goBtn").textContent="▶️ كمّل";
   $("goBtn").classList.remove("s");$("goBtn").classList.add("p");
 }
@@ -186,6 +193,14 @@ document.addEventListener("keydown",e=>{
 });
 setWPM(wpm);
 loadText(SAMPLES["عن القراءة السريعة"]);
+</script>
+<script>
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT")return;
+  if(e.code==="ArrowUp"){setWPM(Math.min(700,wpm+25));$("wpm").value=wpm}
+  else if(e.code==="ArrowDown"){setWPM(Math.max(100,wpm-25));$("wpm").value=wpm}
+  else if(e.code==="ArrowLeft"||e.code==="ArrowRight"){idx=Math.max(0,idx+(e.code==="ArrowLeft"?chunk*10:-chunk*10));if(idx<words.length){renderWord()}}
+});
 </script>
 </body>
 </html>
