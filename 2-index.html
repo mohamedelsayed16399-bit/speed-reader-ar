@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>قارئ سريع | تدرب على القراءة السريعة بالعربي</title>
+<meta name="description" content="اتدرب على القراءة السريعة بالعربية: كلمة كلمة بسرعة تتحكم فيها، مع إحصائيات وتقدّم.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1220;--bg2:#171b31;--card:#1d2242;--line:#2b3160;--txt:#e8eaf6;--dim:#8b90b8;--acc:#ffd166;--acc2:#7c5cff;--ok:#4ade80}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(1200px 700px at 80% -10%,#252b55 0%,var(--bg) 55%);color:var(--txt);font-family:'Tajawal',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14px 12px 40px}
+.wrap{width:100%;max-width:760px}
+header{text-align:center;margin-bottom:14px}
+.brand{font-size:26px;font-weight:800}
+.brand span{color:var(--acc)}
+.sub{color:var(--dim);font-size:13px;margin-top:4px}
+.reader{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;height:220px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:12px}
+.reader::before{content:"";position:absolute;top:50%;right:24px;left:24px;height:1px;background:var(--line)}
+.reader::after{content:"";position:absolute;top:24px;bottom:24px;right:50%;width:1px;background:#2b316088}
+#word{position:relative;z-index:2;font-family:'Amiri',serif;font-size:44px;font-weight:700;display:flex;direction:rtl}
+#word .pivot{color:var(--acc)}
+#word.idle{font-family:'Tajawal';font-size:17px;font-weight:500;color:var(--dim);text-align:center;padding:0 20px}
+.progress{height:8px;background:var(--bg2);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:14px}
+#bar{height:100%;width:0;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:width .2s}
+.controls{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.row:last-child{margin-bottom:0}
+.lbl{font-size:13px;color:var(--dim);font-weight:700;min-width:70px}
+input[type=range]{flex:1;accent-color:var(--acc)}
+.val{font-weight:800;color:var(--acc);min-width:86px;text-align:left;font-size:14px}
+textarea{width:100%;min-height:90px;font-family:inherit;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--txt);resize:vertical}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:inherit;font-size:14px;font-weight:800;border:none;border-radius:11px;padding:10px 18px;cursor:pointer}
+.btn.p{background:var(--acc);color:#1a1300}
+.btn.s{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.btn:active{transform:scale(.96)}
+.stats{display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:8px 16px;text-align:center;min-width:90px}
+.stat .v{font-size:20px;font-weight:800;color:var(--acc)}
+.stat .l{font-size:11px;color:var(--dim)}
+.samples{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.samples button{font-family:inherit;font-size:12px;background:var(--card);border:1px solid var(--line);color:var(--dim);border-radius:9px;padding:6px 12px;cursor:pointer}
+.samples button:hover{color:var(--acc);border-color:var(--acc)}
+.done{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center;display:none;margin-bottom:14px}
+.done.show{display:block}
+.done .big{font-size:30px;font-weight:800;color:var(--ok);margin-bottom:6px}
+.done .tip{color:var(--dim);font-size:13px;line-height:1.9}
+footer{margin-top:22px;text-align:center;color:var(--dim);font-size:12px;line-height:2}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">قارئ <span>سريع</span></div>
+  <div class="sub">اتدرب على القراءة السريعة — كلمة كلمة، من غير ما عينك تلف</div>
+</header>
+<div class="stats">
+  <div class="stat"><div class="v" id="stWords">0</div><div class="l">كلمة</div></div>
+  <div class="stat"><div class="v" id="stTime">0:00</div><div class="l">الوقت المتوقع</div></div>
+  <div class="stat"><div class="v" id="stLeft">0</div><div class="l">الباقي</div></div>
+</div>
+<div class="reader" id="reader"><div id="word" class="idle">الصق نص تحت أو اختار نص جاهز، وبعدين اضغط ابدأ 📖</div></div>
+<div class="progress"><div id="bar"></div></div>
+<div class="done" id="doneBox">
+  <div class="big">خلصت! 🎉</div>
+  <div class="tip" id="doneTip"></div>
+</div>
+<div class="controls">
+  <div class="row">
+    <span class="lbl">السرعة</span>
+    <input type="range" id="wpm" min="100" max="700" step="25" value="250">
+    <span class="val" id="wpmV">250 كلمة/د</span>
+  </div>
+  <div class="row">
+    <span class="lbl">كلمات كل مرة</span>
+    <input type="range" id="chunk" min="1" max="3" step="1" value="1">
+    <span class="val" id="chunkV">1 كلمة</span>
+  </div>
+  <div class="row">
+    <div class="btns" style="width:100%">
+      <button class="btn p" id="goBtn">▶️ ابدأ</button>
+      <button class="btn s" id="rstBtn">🔁 من الأول</button>
+    </div>
+  </div>
+  <textarea id="src" placeholder="الصق أي نص عربي هنا…" spellcheck="false"></textarea>
+  <div class="samples" id="samples"></div>
+</div>
+<footer>تقنية RSVP: عينك ثابتة مكانها والكلام بييجي لها — الطريقة المثبتة علميًا للقراءة الأسرع<br>النص مش بيترفع لأي سيرفر، كل حاجة على جهازك</footer>
+</div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const LS="speed-reader-ar-v1";
+const SAMPLES={
+"عن العلم":"العلم نور يضيء طريق الإنسان في الحياة. من طلب العلم وجده ومن جد في طلبه وصل إلى ما يريد. القراءة غذاء العقل كما أن الطعام غذاء الجسد. اجعل لنفسك كل يوم وقتا تقرأ فيه ولو صفحة واحدة فالقليل الدائم خير من الكثير المنقطع. المعرفة قوة ومن يملكها يملك زمام أموره ومستقبله.",
+"عن الوقت":"الوقت أثمن ما يملكه الإنسان فهو الشيء الوحيد الذي لا يمكن استرجاعه. من ضيع وقته ضيع عمره ومن حافظ عليه حافظ على حياته. نظم يومك ورتب أولوياتك وستجد أنك تنجز في ساعات ما كان يأخذ منك أياما. لا تؤجل عمل اليوم إلى الغد فالغد قد لا يأتي أبدا.",
+"عن النجاح":"النجاح لا يأتي بالصدفة بل هو نتيجة جهد متواصل وصبر طويل. كل إنسان ناجح فشل مرات كثيرة قبل أن يصل لكنه لم يستسلم أبدا. الفرق بين الناجح والفاشل أن الناجح يحاول مرة أخرى بعد كل سقطة. ابدأ من حيث أنت واستخدم ما عندك وافعل ما تستطيع.",
+"عن القراءة السريعة":"القراءة السريعة مهارة يمكن لأي شخص أن يتعلمها بالتدريب المنتظم. المشكلة الأساسية عند معظم القراء أن أعينهم تتحرك كثيرا بين السطور وترجع إلى الوراء بلا داع. في هذه الطريقة تبقى عينك ثابتة في مكان واحد والكلمات تأتي إليها واحدة تلو الأخرى. مع الوقت ستجد أن سرعتك تزيد وفهمك يتحسن أيضا لأن عقلك يتوقف عن التشتت."
+};
+let words=[],idx=0,timer=null,wpm=250,chunk=1;
+try{wpm=+localStorage.getItem(LS)||250;$("wpm").value=wpm}catch(e){}
+function setWPM(v){wpm=v;$("wpmV").textContent=v+" كلمة/د";try{localStorage.setItem(LS,v)}catch(e){}updStats()}
+$("wpm").oninput=e=>setWPM(+e.target.value);
+$("chunk").oninput=e=>{chunk=+e.target.value;$("chunkV").textContent=chunk+(chunk===1?" كلمة":" كلمات")};
+function loadText(t){
+  $("src").value=t;
+  words=t.trim().split(/\s+/).filter(Boolean);
+  idx=0;$("bar").style.width="0%";
+  $("doneBox").classList.remove("show");
+  $("word").className="idle";
+  $("word").textContent="جاهز! اضغط ابدأ ▶️";
+  updStats();
+}
+function updStats(){
+  $("stWords").textContent=words.length;
+  $("stLeft").textContent=Math.max(0,words.length-idx);
+  const mins=words.length/(wpm*chunk? wpm:1);
+  const s=Math.round(words.length/wpm*60);
+  $("stTime").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+}
+function renderWord(){
+  const part=words.slice(idx,idx+chunk).join(" ");
+  if(!part){finishRead();return}
+  const el=$("word");el.className="";el.innerHTML="";
+  const chars=[...part];
+  const pi=Math.floor((chars.length-1)/2);
+  chars.forEach((c,i)=>{
+    const s=document.createElement("span");
+    if(i===pi)s.className="pivot";
+    s.textContent=c;el.appendChild(s);
+  });
+  $("bar").style.width=Math.round(100*idx/words.length)+"%";
+  updStats();
+}
+function step(){
+  idx+=chunk;
+  if(idx>=words.length){finishRead();return}
+  renderWord();
+}
+function start(){
+  if(!words.length){
+    loadText(SAMPLES["عن القراءة السريعة"]);
+  }
+  if(idx>=words.length)idx=0;
+  $("doneBox").classList.remove("show");
+  renderWord();
+  const delay=Math.round(60000*chunk/wpm);
+  timer=setInterval(step,delay);
+  $("goBtn").textContent="⏸️ وقفة";
+  $("goBtn").classList.add("s");$("goBtn").classList.remove("p");
+}
+function pause(){
+  clearInterval(timer);timer=null;
+  $("goBtn").textContent="▶️ كمّل";
+  $("goBtn").classList.remove("s");$("goBtn").classList.add("p");
+}
+function finishRead(){
+  pause();
+  idx=words.length;
+  $("bar").style.width="100%";
+  $("word").className="idle";$("word").textContent="خلصت النص ✅";
+  const tips=[
+    "لو فهمت كويس، زود السرعة ٢٥ كلمة/د المرة الجاية.",
+    "لو حسيت إنك ضعت، نقص السرعة شوية وجرّب كلمتين كل مرة.",
+    "الاستمرارية أهم من السرعة: ٥ دقايق كل يوم هتفرق معاك."
+  ];
+  $("doneTip").textContent="قريت "+words.length+" كلمة بسرعة "+wpm+" كلمة/دقيقة. "+tips[Math.floor(Math.random()*tips.length)];
+  $("doneBox").classList.add("show");
+  updStats();
+}
+$("goBtn").onclick=()=>timer?pause():start();
+$("rstBtn").onclick=()=>{pause();idx=0;$("bar").style.width="0%";$("doneBox").classList.remove("show");$("word").className="idle";$("word").textContent="اضغط ابدأ ▶️";updStats()};
+$("reader").onclick=()=>$("goBtn").click();
+$("src").oninput=()=>{pause();loadText($("src").value)};
+const sm=$("samples");
+for(const name in SAMPLES){
+  const b=document.createElement("button");
+  b.textContent=name;b.onclick=()=>{pause();loadText(SAMPLES[name])};
+  sm.appendChild(b);
+}
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space"&&document.activeElement!==$("src")){e.preventDefault();$("goBtn").click()}
+});
+setWPM(wpm);
+loadText(SAMPLES["عن القراءة السريعة"]);
+</script>
+</body>
+</html>
